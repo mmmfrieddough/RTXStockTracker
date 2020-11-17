@@ -72,8 +72,8 @@ async def get_stock():
         f"3080-=https://www.newegg.com/p/pl?N=100007709%20601357247&PageSize=96&t={t}",
         f"3090-={bestbuy_base_url}&{bestbuy_model_stub.substitute(Model='3090')}&t={t}",
         f"3090-=https://www.newegg.com/p/pl?N=100007709%20601357248&PageSize=96&t={t}",
-        f"5900x-=https://www.bestbuy.com/site/promo/amd-ryzen-5000?qp=numberofcores_facet%3DNumber%20of%20Cores~12-core&t={t}",
-        f"5900x-=https://www.newegg.com/p/pl?N=100007671%20601359154%20601301117&t={t}",
+        f"5900X-=https://www.bestbuy.com/site/promo/amd-ryzen-5000?qp=numberofcores_facet%3DNumber%20of%20Cores~12-core&t={t}",
+        f"5900X-=https://www.newegg.com/p/pl?N=100007671%20601359154%20601301117&t={t}",
     }
     s = AsyncHTMLSession()
 

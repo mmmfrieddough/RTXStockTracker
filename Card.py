@@ -32,7 +32,8 @@ class Card:
         founders_price = {
             "3070": 500,
             "3080": 700,
-            "3090": 1500
+            "3090": 1500,
+            "5900X": 550,
         }
 
         return founders_price[self.model]
