@@ -30,6 +30,12 @@ def notify_difference(card, original_text):
     print("")
     print("")
 
+    # Open browser tab for purchase
+    if "newegg" in card.get_url():
+        webbrowser.open(f"https://secure.newegg.com/Shopping/AddToCart.aspx?ItemList={card.get_item_id()}&Submit=ADD&target=NEWEGGCART")
+    else:
+        webbrowser.open(card.getUrl(), new=2)
+
     if Util.get_tweepy_enabled():
         auth = tweepy.OAuthHandler(api.get_api_key(), api.get_api_secret())
         auth.set_access_token(api.get_access_token(), api.get_access_token_secret())
@@ -60,12 +66,14 @@ async def get_stock():
     t = int(round(time.time() * 1000))
 
     urls = {
-        f"3070-={bestbuy_base_url}&{bestbuy_model_stub.substitute(Model='3070')}&t={t}",
-        f"3070-=https://www.newegg.com/p/pl?N=100007709%20601357250&PageSize=96&t={t}",
+        # f"3070-={bestbuy_base_url}&{bestbuy_model_stub.substitute(Model='3070')}&t={t}",
+        # f"3070-=https://www.newegg.com/p/pl?N=100007709%20601357250&PageSize=96&t={t}",
         f"3080-={bestbuy_base_url}&{bestbuy_model_stub.substitute(Model='3080')}&t={t}",
         f"3080-=https://www.newegg.com/p/pl?N=100007709%20601357247&PageSize=96&t={t}",
         f"3090-={bestbuy_base_url}&{bestbuy_model_stub.substitute(Model='3090')}&t={t}",
-        f"3090-=https://www.newegg.com/p/pl?N=100007709%20601357248&PageSize=96&t={t}"
+        f"3090-=https://www.newegg.com/p/pl?N=100007709%20601357248&PageSize=96&t={t}",
+        f"5900x-=https://www.bestbuy.com/site/promo/amd-ryzen-5000?qp=numberofcores_facet%3DNumber%20of%20Cores~12-core&t={t}",
+        f"5900x-=https://www.newegg.com/p/pl?N=100007671%20601359154%20601301117&t={t}",
     }
     s = AsyncHTMLSession()
 
@@ -116,10 +124,12 @@ async def parse_newegg_url(s, url, model):
             card_set[card_id] = card
 
 if __name__ == '__main__':
-    print(f"{time.ctime()} ::: Checking Stock...")
+    print("Starting up")
     Util.clear_card_shelf()
 
     while True:
+        print(f"{time.ctime()} ::: Checking Stock...")
+        
         card_set = Util.get_card_dict()
 
         try:
