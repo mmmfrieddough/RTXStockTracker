@@ -91,3 +91,51 @@ class Card:
                 return None
         
         return new_card
+
+    def create_from_amazon(html, model):
+        try:
+            price_parent = html.find('.a-price', first=True)
+            price = price_parent.find('span', first=True).text.split('$')[2]
+        except:
+            # If the price can't be gathered, just set it to 'unknown' for now.
+            price = "Unknown"
+
+        try:
+            name = html.find('h2', first=True).text
+        except:
+            name = "Unknown"
+
+        if "Unknown" in name:
+            return None
+
+        if model not in name:
+            return None
+
+        if "Unknown" in price:
+            stock_button = "Out of stock"
+        else:
+            stock_button = "In stock"
+        
+        try:
+            title = html.find('h2', first=True)
+            card_url = title.absolute_links.pop()
+        except:
+            card_url = "Unknown"
+
+        try:
+            item_id = html.attrs['data-asin']
+        except:
+            item_id = "Unknown"
+
+        if "Unknown" in item_id:
+            return None
+
+        new_card = Card(model, price, item_id, name, card_url, stock_button)
+
+        # Check price. Make sure it's within at least $300 of the FE price.
+        if "Unknown" not in price:
+            price_as_float = float(''.join(d for d in price if d.isdigit() or d == '.'))
+            if abs(price_as_float - new_card.get_founders_price()) > 300:
+                return None
+        
+        return new_card

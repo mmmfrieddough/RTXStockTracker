@@ -10,6 +10,12 @@ import sys
 import time
 import tweepy
 import Util
+import webbrowser
+
+# http://www.networkinghowtos.com/howto/common-user-agent-list/
+HEADERS = ({'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+            'Accept-Language': 'en-US, en;q=0.5'})
 
 # Init global temp dict.
 global card_set
@@ -71,9 +77,11 @@ async def get_stock():
         f"3080-={bestbuy_base_url}&{bestbuy_model_stub.substitute(Model='3080')}&t={t}",
         f"3080-=https://www.newegg.com/p/pl?N=100007709%20601357247&PageSize=96&t={t}",
         f"3090-={bestbuy_base_url}&{bestbuy_model_stub.substitute(Model='3090')}&t={t}",
+        f"3090-=https://www.amazon.com/s?k=rtx+3090&i=computers&rh=n%3A17923671011%2Cn%3A284822%2Cp_n_availability%3A1248801011&dc&qid=1605664070&rnid=1248799011&t=%7Bt%7D&t={t}"
         f"3090-=https://www.newegg.com/p/pl?N=100007709%20601357248&PageSize=96&t={t}",
         f"5900X-=https://www.bestbuy.com/site/promo/amd-ryzen-5000?qp=numberofcores_facet%3DNumber%20of%20Cores~12-core&t={t}",
         f"5900X-=https://www.newegg.com/p/pl?N=100007671%20601359154%20601301117&t={t}",
+        f"5900X-=https://www.amazon.com/s?k=5900x&i=computers&rh=n%3A229189%2Cp_n_availability%3A1248801011&dc&qid=1605664558&rnid=1248799011&t={t}",
     }
     s = AsyncHTMLSession()
 
@@ -87,11 +95,16 @@ async def parse_url(s, url, model):
         await parse_bestbuy_url(s, url, model)
     if "newegg" in url:
         await parse_newegg_url(s, url, model)
+    if "amazon" in url:
+        await parse_amazon_url(s, url, model)
 
 async def parse_bestbuy_url(s, url, model):
     # Narrow HTML search down using HTML class selectors.
     r = await s.get(url)
     cards = r.html.find('.right-column')
+
+    if len(cards) == 0:
+        print(f"No items found for url: {url}")
 
     for item in cards:      
         card = Card.create_from_bestbuy(item, model)
@@ -110,8 +123,31 @@ async def parse_newegg_url(s, url, model):
     r = await s.get(url)
     cards = r.html.find('.item-cell')
 
+    if len(cards) == 0:
+        print(f"No items found for url: {url}")
+
     for item in cards:
         card = Card.create_from_newegg(item, model)
+
+        if card is not None:
+            card_id = card.get_item_id()
+            if card_id in card_set.keys():
+                if card_set[card_id].get_button_text() != card.get_button_text():
+                    original_text = card_set[card_id].get_button_text()
+                    if card.is_in_stock():
+                        notify_difference(card, original_text)
+
+            card_set[card_id] = card
+
+async def parse_amazon_url(s, url, model):
+    r = await s.get(url, headers=HEADERS)
+    cards = r.html.find('.s-result-item')
+
+    if len(cards) == 0:
+        print(f"No items found for url: {url}")
+
+    for item in cards:
+        card = Card.create_from_amazon(item, model)
 
         if card is not None:
             card_id = card.get_item_id()
